@@ -19,18 +19,23 @@ class _HomePageState extends State<HomePage> {
   final ayatText = <Widget>[];
   List<String> ayatsToBeRecited = [];
   List<int> ayatOptions = [];
+  List<Surah>? surahList = [];
   int initialDropDownValue = 5;
   late QuranModel quranModel;
   Tracker tracker = Tracker(
       ayatsAskedByUser: 0,
       currentAyatNumber: 0,
       currentSurahNumber: 0,
-      ayatCurrentOffset: 0,
+      ayatsReadByUser: 0,
       totalayatsfromNextSurah: 0);
 
   @override
   void initState() {
-    loadQuranfromJson().then((v) => {quranModel = v});
+    loadQuranfromJson().then((v) => {
+          quranModel = v,
+          surahList = quranModel.data!.surahs,
+        });
+
     ayatOptions = List<int>.generate(20, (index) {
       return (index + 1) * 5;
     });
@@ -99,15 +104,18 @@ class _HomePageState extends State<HomePage> {
             }).toList(),
             // After selecting the desired option,it will
             // change button value to selected value
+
             onChanged: (int? newValue) {
               setState(() {
+                Log("New Value: " + newValue.toString());
                 if (newValue != 0) {
                   initialDropDownValue = newValue!;
 
                   tracker.ayatsAskedByUser = newValue;
-                } else {
-                  tracker.ayatsAskedByUser = initialDropDownValue;
                 }
+                // if (newValue == 0) {
+                //   tracker.ayatsAskedByUser = 5;
+                // }
               });
             },
           ),
@@ -117,6 +125,9 @@ class _HomePageState extends State<HomePage> {
           onPressed: (() {
             // int value = int.parse((_myController.text));
             Log("ayats asked : " + tracker.ayatsAskedByUser.toString());
+            if (tracker.ayatsAskedByUser == 0) {
+              tracker.ayatsAskedByUser = 5;
+            }
             getAyats(tracker.ayatsAskedByUser!);
 
             Navigator.push(
@@ -125,6 +136,7 @@ class _HomePageState extends State<HomePage> {
                   builder: ((context) => QuranDetail(
                         tracker: tracker,
                         ayats: ayatsToBeRecited,
+                        surahList: surahList,
                       )),
                 ));
           }),
@@ -190,9 +202,8 @@ class _HomePageState extends State<HomePage> {
       for (i;
           i < (tracker.ayatsAskedByUser! + tracker.currentAyatNumber!);
           i++) {
-        ayatsToBeRecited.add(i.toString() +
-            " " +
-            surah[tracker.currentSurahNumber!].ayahs![i].text.toString());
+        ayatsToBeRecited
+            .add(surah[tracker.currentSurahNumber!].ayahs![i].text.toString());
       }
       Log("Done For Loop : " + tracker.currentAyatNumber!.toString());
 
@@ -205,7 +216,7 @@ class _HomePageState extends State<HomePage> {
           tracker.ayatsAskedByUser,
           tracker.currentSurahNumber,
           tracker.totalayatsfromNextSurah,
-          tracker.ayatCurrentOffset);
+          tracker.ayatsReadByUser);
       // tracker.ayatsAskedByUser = 0;
       // return ayatText;
 
@@ -290,7 +301,7 @@ class _HomePageState extends State<HomePage> {
         tracker.ayatsAskedByUser,
         tracker.currentSurahNumber,
         tracker.totalayatsfromNextSurah,
-        tracker.ayatCurrentOffset);
+        tracker.ayatsReadByUser);
     // tracker.ayatsAskedByUser = 0;
     // return ayatText;
   }
@@ -332,16 +343,16 @@ class _HomePageState extends State<HomePage> {
     for (int i = 0; i < remainingAyatfromSurah; i++) {
       // tracker.currentAyatNumber = tracker.currentAyatNumber! + i;
 
-      ayatsToBeRecited.add((tracker.currentAyatNumber).toString() +
-          " " +
-          surah[tracker.currentSurahNumber!]
-              .ayahs![tracker.currentAyatNumber!]
-              .text
-              .toString());
+      ayatsToBeRecited.add(surah[tracker.currentSurahNumber!]
+          .ayahs![tracker.currentAyatNumber!]
+          .text
+          .toString());
       // Log("Remaining Ayats :" +
       //     surah[tracker.currentSurahNumber!].ayahs![i].text.toString());
       tracker.currentAyatNumber = tracker.currentAyatNumber! + 1;
     }
+
+    tracker.previousSurahNumber = trackerCurrentSurahNumber;
     trackerCurrentSurahNumber++;
     tracker.currentSurahNumber = trackerCurrentSurahNumber;
 
@@ -377,9 +388,8 @@ class _HomePageState extends State<HomePage> {
     int i = 0;
     for (i; i < tracker.totalayatsfromNextSurah!; i++) {
       // ayatText.add(Text(surah[currentSurahNumber].ayahs![i].text.toString()));
-      ayatsToBeRecited.add(i.toString() +
-          " " +
-          surah[trackerCurrentSurahNumber].ayahs![i].text.toString());
+      ayatsToBeRecited
+          .add(surah[trackerCurrentSurahNumber].ayahs![i].text.toString());
       Log("Next Surah Ayats :" +
           surah[trackerCurrentSurahNumber].ayahs![i].text.toString());
     }
