@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qurantest/logger.dart';
 import 'package:qurantest/models/quranmodel.dart';
 import 'package:qurantest/models/qurantracker.dart';
+import 'package:qurantest/settings.dart';
 import 'package:qurantest/widgets/ayatdecoration.dart';
 import 'package:qurantest/widgets/styles.dart';
 
@@ -40,6 +41,11 @@ class _QuranDetailState extends State<QuranDetail> {
           PopupMenuButton<int>(
             onSelected: (value) {
               if (value == 0) {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Settings(fontSize),
+                    ));
               } else if (value == 1) {}
             },
             itemBuilder: (context) => [
